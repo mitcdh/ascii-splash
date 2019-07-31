@@ -13,6 +13,7 @@ CMDQ = queue.Queue(maxsize=0)
 LISTEN_HOST = os.environ.get('LISTEN_HOST', '127.0.0.1')
 LISTEN_PORT = int(os.environ.get('LISTEN_PORT', '1337'))
 LISTEN_SECRET = b'UNCONTAINED'
+ESCAPE_CODE = "<Escape>."
 SPLASH_MESSAGE = """
             $uuuu$$$$$uuuuuuu$           
              $uuuuuu$$uu$uuu$            
@@ -70,7 +71,7 @@ class Splasher(Thread):
 
         splash_screen.attributes("-topmost", True)
         splash_screen.attributes('-fullscreen', True)
-        splash_screen.bind("<Escape>.", lambda w: w.widget.destroy())  # Exit on Escape + period
+        splash_screen.bind(ESCAPE_CODE, lambda w: w.widget.destroy())  # Exit on Escape + period
         splash_screen.focus_force()
         splash_screen.lift()
 
