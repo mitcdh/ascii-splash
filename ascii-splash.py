@@ -93,7 +93,7 @@ class Splasher():
 
         label = tkinter.Label(window, text=SPLASH_MESSAGE)
         label.config(bg=SPLASH_BG_COLOUR, fg=SPLASH_FG_COLOUR,
-                     font=(SPLASH_FONT, 18))
+                     font=(SPLASH_FONT, 18), cursor="none")
         label.pack(side=tkinter.TOP, expand=tkinter.YES,
                    fill=tkinter.BOTH)
 
