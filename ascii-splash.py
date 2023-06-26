@@ -4,6 +4,8 @@ import queue
 import socketserver
 import threading
 import tkinter
+import signal
+
 
 ## logging configuration
 logging.basicConfig(format='%(asctime)s %(levelname)s: %(message)s',
@@ -66,6 +68,9 @@ class Splasher():
     def __init__(self):
         self.root = tkinter.Tk()
         self.root.withdraw()
+        self.root.overrideredirect(True)
+        self.root.attributes('-fullscreen', True)
+        self.root.attributes('-topmost', True)
         self.root.after(0, self.parse)
         self.root.mainloop()
 
@@ -81,6 +86,10 @@ class Splasher():
             pass
         self.root.after(500, self.parse)
 
+    def signal_handler(self, signum, frame):
+        # Handle the signal here
+        logging.debug("SPL: received signal %d ignoring..." % signum)
+
     def splash(self):
         logging.debug("SPL: creating new splash window")
         window = tkinter.Toplevel(self.root)
@@ -90,6 +99,9 @@ class Splasher():
         window.bind(SPLASH_ESCAPE, lambda w: w.widget.destroy())
         window.focus_force()
         window.lift()
+
+        signal.signal(signal.SIGINT, signal_handler)
+        signal.signal(signal.SIGTERM, signal_handler)
 
         label = tkinter.Label(window, text=SPLASH_MESSAGE)
         label.config(bg=SPLASH_BG_COLOUR, fg=SPLASH_FG_COLOUR,
