@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 import logging
 import os
 import queue
@@ -51,8 +52,14 @@ $$$$'''$$$$$$$$$$uuu   uu$$$$$$$$$'''$$$'
 """
 
 # Creating global queue for communication between Server and Splasher
-CMDQ = queue.Queue(maxsize=0)
+def signal_handler(self, signum, frame):
+    # Handle the signal here
+    logging.debug("SIG: received signal %d ignoring..." % signum)
 
+CMDQ = queue.Queue(maxsize=0)
+signal.signal(signal.SIGINT, signal_handler)
+signal.signal(signal.SIGTERM, signal_handler)
+signal.signal(signal.SIGQUIT, signal_handler)
 
 class Worker(threading.Thread):
     def __init__(self):
@@ -67,12 +74,18 @@ class Worker(threading.Thread):
 class Splasher():
     def __init__(self):
         self.root = tkinter.Tk()
+        self.root.bind('<Alt-F4>', self.ignore_altf4)
+        self.root.protocol("WM_DELETE_WINDOW", self.ignore_altf4)
         self.root.withdraw()
         self.root.overrideredirect(True)
         self.root.attributes('-fullscreen', True)
         self.root.attributes('-topmost', True)
         self.root.after(0, self.parse)
         self.root.mainloop()
+
+    def ignore_altf4(event):
+        logging.debug("SPL: intercepting and ignoring <Alt-F4>")
+        pass
 
     def parse(self):
         try:
@@ -86,28 +99,23 @@ class Splasher():
             pass
         self.root.after(500, self.parse)
 
-    def signal_handler(self, signum, frame):
-        # Handle the signal here
-        logging.debug("SPL: received signal %d ignoring..." % signum)
-
     def splash(self):
         logging.debug("SPL: creating new splash window")
         window = tkinter.Toplevel(self.root)
 
         window.attributes("-topmost", True)
+        window.bind('<Alt-F4>', self.ignore_altf4)
+        window.protocol("WM_DELETE_WINDOW", self.ignore_altf4)
         window.attributes('-fullscreen', True)
         window.bind(SPLASH_ESCAPE, lambda w: w.widget.destroy())
         window.focus_force()
-        window.lift()
-
-        signal.signal(signal.SIGINT, signal_handler)
-        signal.signal(signal.SIGTERM, signal_handler)
-
         label = tkinter.Label(window, text=SPLASH_MESSAGE)
         label.config(bg=SPLASH_BG_COLOUR, fg=SPLASH_FG_COLOUR,
                      font=(SPLASH_FONT, 18), cursor="none")
         label.pack(side=tkinter.TOP, expand=tkinter.YES,
                    fill=tkinter.BOTH)
+        window.lift()
+
 
 class Server(socketserver.StreamRequestHandler):
     def handle(self):
